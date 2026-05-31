@@ -1,71 +1,44 @@
-"use client";
+import { getSession } from "@/lib/session";
+import { redirect } from "next/navigation";
+import LoginForm from "./login-form";
+import Image from "next/image";
 
-import { useState } from "react";
-import { authClient } from "@/lib/auth-client";
+export default async function LoginPage() {
+  const session = await getSession();
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const { error } = await authClient.signIn.magicLink({
-      email,
-      callbackURL: "/dashboard",
-    });
-
-    if (error) {
-      setError(error.message ?? "Une erreur est survenue.");
-    } else {
-      setSent(true);
-    }
-    setLoading(false);
-  }
-
-  if (sent) {
-    return (
-      <div>
-        <h1>Vérifiez vos emails</h1>
-        <p>Un lien de connexion a été envoyé à <strong>{email}</strong>.</p>
-        <p>Cliquez sur le lien dans l&apos;email pour vous connecter.</p>
-      </div>
-    );
+  if (session) {
+    redirect("/dashboard");
   }
 
   return (
-    <div>
-      <h1>Connexion</h1>
-
-      <button
-        onClick={() => authClient.signIn.social({ provider: "github", callbackURL: "/dashboard" })}
-      >
-        Se connecter avec GitHub
-      </button>
-
-      <hr />
-
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="email">Adresse email</label>
-        <br />
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          placeholder="vous@exemple.com"
+    <div className="w-screen h-screen">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 lg:left-4 lg:translate-x-0 w-[30vw] lg:w-[10vw]">
+        <Image
+          src="/logo/logo_line.svg"
+          alt="Logo Lifeflow™"
+          className="w-full h-full object-contain"
+          width={1920}
+          height={1080}
         />
-        <br />
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? "Envoi en cours…" : "Recevoir le lien de connexion"}
-        </button>
-      </form>
+      </div>
+      <div className="flex h-screen w-screen">
+        <div className="w-full lg:w-1/2 h-full flex items-center justify-center p-8">
+          <LoginForm />
+        </div>
+
+        <div className="w-1/2 h-full p-4 hidden lg:block">
+          <div className="bg-olive-200 rounded-2xl w-full h-full flex items-center justify-center aspect-[1/1.125] overflow-hidden">
+            <Image
+              src="/placeholders/auth-placeholder_upscale.webp"
+              alt="Placeholder"
+              loading="eager"
+              width={1920}
+              height={1080}
+              className="w-full h-full object-cover object-left"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
